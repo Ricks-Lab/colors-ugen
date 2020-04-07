@@ -44,7 +44,7 @@ def main():
     parser.add_argument('--about', help='README',
                         action='store_true', default=False)
     parser.add_argument('--num_colors', help='number of colors to generate',
-                        type=int, default=18)
+                        type=int, default=150)
     parser.add_argument('-d', '--debug', help='Debug output',
                         action='store_true', default=False)
     args = parser.parse_args()
@@ -62,7 +62,7 @@ def main():
         sys.exit(0)
 
     colors = color_ugen.ColorUgen()
-    color_list = colors.color_gen_list(150)
+    color_list = colors.color_gen_list(args.num_colors, debug=args.debug)
 
     colors.print()
 
@@ -72,7 +72,8 @@ def main():
     #ax.set_facecolor('#d0dbd5')
     #ax.set_facecolor('#cccccc')
     #ax.set_facecolor('#bfbbbb')
-    ax.set_facecolor('#afaaaa')
+    #ax.set_facecolor('#afaaaa')
+    ax.set_facecolor('#aaafaa')
     fig.patch.set_facecolor('#eeeeee')
     plt.subplots_adjust(left=0.01, right=0.99, top=0.99, bottom=0.01)
 

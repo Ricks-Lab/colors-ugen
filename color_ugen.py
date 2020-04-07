@@ -29,6 +29,7 @@ __docformat__ = 'reStructuredText'
 # pylint: disable=line-too-long
 
 import colorsys
+import math
 
 
 class ColorUgen:
@@ -48,30 +49,46 @@ class ColorUgen:
         self.counter += 1
         return
 
-    def color_gen_list(self, num_cols):
-        #h_params = (0, 360, 15)  # min, max, num_steps
-        #s_params = (30, 100, 2)
-        #v_params = (50, 100, 3)
-        h_params = (0, 360, 15)  # min, max, num_steps
-        s_params = (50, 90, 2)
-        v_params = (60, 100, 3)
-        total_sv_steps = s_params[2] * v_params[2]
+    def color_gen_list(self, num_cols, debug=False):
 
+        # Calculate optimal number of steps for num_cols distinct colors
+        num_hues = 14
+        num_sats = int((math.sqrt(num_cols/num_hues)) // 1) + 1
+        num_vals = int((num_cols / (num_hues + num_sats)) // 1) - 2
+        if debug: print('loops: h={}, s={}, v={}'.format(num_hues, num_sats, num_vals))
+
+        # Calculate range parameters, start, stop, index.  Subtract from hue stop, to allow drifting start
+        max_hue = 360 - int(360/num_hues)
+        h_params = (0, max_hue, num_hues)  # min, max, num_steps
+        s_params = (30, 70, num_sats)
+        v_params = (40, 100, num_vals)
+        if debug: print('params: h={}, s={}, v={}'.format(h_params, s_params, v_params))
+
+        # Set parameters for drifting hue
+        total_sv_steps = s_params[2] * v_params[2]
         start_hue = h_params[0]
-        v_step = int((v_params[1] - v_params[0]) / v_params[2])
+
+        # Set step sizes, always round up
+        v_step = int(((v_params[1] - v_params[0]) / v_params[2]) // 1) + 1
+        s_step = int(((s_params[1] - s_params[0]) / s_params[2]) // 1) + 1
+        h_step = int(((h_params[1] - h_params[0]) / h_params[2]) // 1) + 1
+        if debug: print('h_step: {}, v_step: {}, s_step: {}'.format(h_step, v_step, s_step))
+
         for t_val in range(v_params[1], v_params[0], -v_step):
+            if t_val <= v_params[0]: continue
             hsv_val = t_val / v_params[1]
-            s_step = int((t_val - s_params[0]) / s_params[2])
-            print('v_step: {}, s_step: {}'.format(v_step, s_step))
-            for t_sat in range(t_val, s_params[0], -s_step):
+
+            for t_sat in range(s_params[1], s_params[0], -s_step):
+                if t_sat <= s_params[0]: continue
                 hsv_sat = t_sat / s_params[1]
-                h_step = int((h_params[1] - h_params[0]) / h_params[2])
-                for t_hue in range(start_hue, h_params[1], h_step):
+
+                for t_hue in range(h_params[0] + start_hue, h_params[1] + start_hue, h_step):
+                    if t_hue >= h_params[1]: continue
                     hsv_hue = float(t_hue) / 360.0
                     self.add_hsv(tuple([hsv_hue, hsv_sat, hsv_val]))
                 start_hue += int(h_step / total_sv_steps)
-                print('start_hue: {}'.format(start_hue))
-        return list(self.colors.keys())
+                if debug: print('start_hue: {}'.format(start_hue))
+        return list(self.colors.keys())[-num_cols:]
 
     def print(self):
         print('Added hsv: {}, Resultant rgb: {}'.format(self.counter, len(self.colors)))
