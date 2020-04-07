@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-""" color-gen  -  ColorGen Classs
+""" color-ugen  -  ColorGen Classs
 
     Copyright (C) 2019  RueiKe
 

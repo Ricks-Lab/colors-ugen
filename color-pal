@@ -32,7 +32,7 @@ import argparse
 import sys
 import math
 import matplotlib.pyplot as plt
-import color_gen
+import color_ugen
 
 
 def main():
