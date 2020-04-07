@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-""" color-ugen  -  ColorGen Classs
+""" color-ugen  -  ColorUgen Class
 
     Copyright (C) 2019  RueiKe
 
@@ -31,7 +31,7 @@ __docformat__ = 'reStructuredText'
 import colorsys
 
 
-class ColorGen:
+class ColorUgen:
     def __init__(self):
         self.colors = {}
         self.counter = 0

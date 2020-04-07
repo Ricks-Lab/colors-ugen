@@ -61,7 +61,7 @@ def main():
         print('Status: ', __status__)
         sys.exit(0)
 
-    colors = color_gen.ColorGen()
+    colors = color_ugen.ColorUgen()
     color_list = colors.color_gen_list(150)
 
     colors.print()
