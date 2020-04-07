@@ -60,8 +60,8 @@ class ColorUgen:
         # Calculate range parameters, start, stop, index.  Subtract from hue stop, to allow drifting start
         max_hue = 360 - int(360/num_hues)
         h_params = (0, max_hue, num_hues)  # min, max, num_steps
-        s_params = (30, 70, num_sats)
-        v_params = (40, 100, num_vals)
+        s_params = (60, 95, num_sats)
+        v_params = (30, 90, num_vals)
         if debug: print('params: h={}, s={}, v={}'.format(h_params, s_params, v_params))
 
         # Set parameters for drifting hue
@@ -74,21 +74,25 @@ class ColorUgen:
         h_step = int(((h_params[1] - h_params[0]) / h_params[2]) // 1) + 1
         if debug: print('h_step: {}, v_step: {}, s_step: {}'.format(h_step, v_step, s_step))
 
+        # Step from brightest to darkest
         for t_val in range(v_params[1], v_params[0], -v_step):
-            if t_val <= v_params[0]: continue
-            hsv_val = t_val / v_params[1]
+            hsv_val = t_val / 100
 
+            # Step from highest saturation to lowest
             for t_sat in range(s_params[1], s_params[0], -s_step):
-                if t_sat <= s_params[0]: continue
-                hsv_sat = t_sat / s_params[1]
+                hsv_sat = t_sat / 100
 
+                # Step from red to one step before red again
                 for t_hue in range(h_params[0] + start_hue, h_params[1] + start_hue, h_step):
-                    if t_hue >= h_params[1]: continue
+                    # Green correct
+                    if 80 < t_hue < 130: continue
+                    if hsv_val > 0.90: m_hsv_val = hsv_val * 0.85 if 85 < t_hue < 140 else hsv_val
+                    else: m_hsv_val = hsv_val
                     hsv_hue = float(t_hue) / 360.0
-                    self.add_hsv(tuple([hsv_hue, hsv_sat, hsv_val]))
+                    self.add_hsv(tuple([hsv_hue, hsv_sat, m_hsv_val]))
                 start_hue += int(h_step / total_sv_steps)
                 if debug: print('start_hue: {}'.format(start_hue))
-        return list(self.colors.keys())[-num_cols:]
+        return list(self.colors.keys())[:num_cols]
 
     def print(self):
         print('Added hsv: {}, Resultant rgb: {}'.format(self.counter, len(self.colors)))

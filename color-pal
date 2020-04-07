@@ -73,7 +73,7 @@ def main():
     #ax.set_facecolor('#cccccc')
     #ax.set_facecolor('#bfbbbb')
     #ax.set_facecolor('#afaaaa')
-    ax.set_facecolor('#aaafaa')
+    ax.set_facecolor('#bbbfbb')
     fig.patch.set_facecolor('#eeeeee')
     plt.subplots_adjust(left=0.01, right=0.99, top=0.99, bottom=0.01)
 
