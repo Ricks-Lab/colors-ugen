@@ -169,8 +169,8 @@ class ColorUgen:
         # Calculate range parameters, start, stop, index.  Subtract from hue stop, to allow drifting start
         max_hue = 360 - int(360/num_hues)
         h_params = (0, max_hue, num_hues)  # min, max, num_steps
-        s_params = (40, 95, num_sats)
-        v_params = (40, 90, num_vals)
+        s_params = (40, 90, num_sats)
+        v_params = (40, 80, num_vals)
         if debug: print('params: h={}, s={}, v={}'.format(h_params, s_params, v_params))
 
         # Set parameters for drifting hue
