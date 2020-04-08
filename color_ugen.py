@@ -36,15 +36,36 @@ class ColorUgen:
     def __init__(self):
         self.colors = {}
         self.counter = 0
+        self.maps = ['rgb', 'hsv']
+
+    def sort_by_key(self):
+        self.colors = {key: self.colors[key] for key in sorted(self.colors.keys())}
+
+    def sort_by_value(self):
+        self.colors = {k: self.colors[k] for k in sorted(self.colors, key=self.colors.get, reverse=True)}
+
+    def drop_brigth(self, y=0.99):
+        self.colors = {k: v for k, v in self.colors.items() if v[0] < y}
+
+    def drop_dark(self, y=0.01):
+        self.colors = {k: v for k, v in self.colors.items() if v[0] > y}
 
     def add_rgb(self, add_val, color_space='hsv', quiet=True):
         if color_space == 'yiq':
             rgb_tup = colorsys.yiq_to_rgb(*add_val)
+            self.maps[1] = 'yiq'
+        elif color_space == 'rgb':
+            rgb_tup = add_val
+            add_val = colorsys.rgb_to_yiq(*add_val)
+            self.maps[1] = 'yiq'
         else:
             rgb_tup = colorsys.hsv_to_rgb(*add_val)
+            self.maps[1] = 'hsv'
+
         if rgb_tup[0] < 0 or rgb_tup[1] < 0 or rgb_tup[2] < 0:
             print('RGB error: {}'.format(rgb_tup))
             return
+
         hex_rgb = '#{:02x}{:02x}{:02x}'.format(int(rgb_tup[0]*255), int(rgb_tup[1]*255), int(rgb_tup[2]*255))
         if not quiet:
             print('rgb: {}, hsv: ({:.2f}, {:.2f}, {:.2f})'.format(hex_rgb, *add_val))
@@ -56,9 +77,47 @@ class ColorUgen:
         if color_space == 'yiq':
             #return self.color_gen_list_from_yiq(num_cols, debug)[:num_cols]
             return self.color_gen_list_from_yiq(num_cols, debug)
+        elif color_space == 'rgb':
+            # return self.color_gen_list_from_yiq(num_cols, debug)[:num_cols]
+            return self.color_gen_list_from_rgb(num_cols, debug)
         else:
             #return self.color_gen_list_from_hsv(num_cols, debug)[:num_cols]
             return self.color_gen_list_from_hsv(num_cols, debug)
+
+    def color_gen_list_from_rgb(self, num_cols, debug=False):
+
+        # Calculate optimal number of steps for num_cols distinct colors
+        size_side = int((num_cols ** (1.0/3.0)) // 1)
+        num_r = num_g = num_b = size_side + 1
+        num_g = num_g // 2 - 1
+        num_b += 1
+        if debug: print('loops: r={}, g={}, b={}'.format(num_r, num_g, num_b))
+
+        # Calculate range parameters, start, stop, index.  Subtract from hue stop, to allow drifting start
+        r_params = (0, 255, num_r)  # min, max, num_steps
+        g_params = (0, 255, num_g)
+        b_params = (0, 255, num_b)
+        if debug: print('params: r={}, g={}, b={}'.format(r_params, g_params, b_params))
+
+        # Set parameters for jittering iqx and iqy values between y steps.
+
+        # Set step sizes, always round up
+        r_step = int(((r_params[1] - r_params[0]) / r_params[2]) // 1) + 1
+        g_step = int(((g_params[1] - g_params[0]) / g_params[2]) // 1) + 1
+        b_step = int(((b_params[1] - b_params[0]) / b_params[2]) // 1) + 1
+        if debug: print('r_step: {}, g_step: {}, b_step: {}'.format(r_step, g_step, b_step))
+
+        # Step through RGB values
+        for t_r in range(r_params[0], r_params[1], r_step):
+            for t_b in range(b_params[0], b_params[1], b_step):
+                for t_g in range(g_params[0], g_params[1], g_step):
+                    self.add_rgb(tuple([t_r/255, t_g/255, t_b/255]), color_space='rgb')
+
+        self.drop_brigth(0.8)
+        self.drop_dark(0.2)
+        self.sort_by_value()
+        #self.sort_by_key()
+        return list(self.colors.keys())
 
     def color_gen_list_from_yiq(self, num_cols, debug=False):
 
@@ -70,8 +129,8 @@ class ColorUgen:
 
         # Calculate range parameters, start, stop, index.  Subtract from hue stop, to allow drifting start
         y_params = (10, 90, num_y)  # min, max, num_steps
-        iqx_params = (-100, 100, num_iqx)
-        iqy_params = (-100, 100, num_iqy)
+        iqx_params = (-59, 59, num_iqx)
+        iqy_params = (-52, 52, num_iqy)
         if debug: print('params: y={}, iqx={}, iqy={}'.format(y_params, iqx_params, iqy_params))
 
         # Set parameters for jittering iqx and iqy values between y steps.
