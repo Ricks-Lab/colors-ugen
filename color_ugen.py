@@ -89,8 +89,8 @@ class ColorUgen:
         # Calculate optimal number of steps for num_cols distinct colors
         size_side = int((num_cols ** (1.0/3.0)) // 1)
         num_r = num_g = num_b = size_side + 1
-        num_g = num_g // 2 - 1
-        num_b += 1
+        #num_g = num_g // 2 - 1
+        #num_b += 1
         if debug: print('loops: r={}, g={}, b={}'.format(num_r, num_g, num_b))
 
         # Calculate range parameters, start, stop, index.  Subtract from hue stop, to allow drifting start
@@ -113,7 +113,7 @@ class ColorUgen:
                 for t_g in range(g_params[0], g_params[1], g_step):
                     self.add_rgb(tuple([t_r/255, t_g/255, t_b/255]), color_space='rgb')
 
-        self.drop_brigth(0.8)
+        self.drop_brigth(0.6)
         self.drop_dark(0.2)
         self.sort_by_value()
         #self.sort_by_key()
@@ -161,16 +161,16 @@ class ColorUgen:
     def color_gen_list_from_hsv(self, num_cols, debug=False):
 
         # Calculate optimal number of steps for num_cols distinct colors
-        num_hues = 14
+        num_hues = 18
         num_sats = int((math.sqrt(num_cols/num_hues)) // 1) + 1
-        num_vals = int((num_cols / (num_hues + num_sats)) // 1) - 2
+        num_vals = int((num_cols / (num_hues + num_sats)) // 1)
         if debug: print('loops: h={}, s={}, v={}'.format(num_hues, num_sats, num_vals))
 
         # Calculate range parameters, start, stop, index.  Subtract from hue stop, to allow drifting start
         max_hue = 360 - int(360/num_hues)
         h_params = (0, max_hue, num_hues)  # min, max, num_steps
-        s_params = (60, 95, num_sats)
-        v_params = (30, 90, num_vals)
+        s_params = (40, 95, num_sats)
+        v_params = (40, 90, num_vals)
         if debug: print('params: h={}, s={}, v={}'.format(h_params, s_params, v_params))
 
         # Set parameters for drifting hue
@@ -193,9 +193,11 @@ class ColorUgen:
 
                 # Step from red to one step before red again
                 for t_hue in range(h_params[0] + start_hue, h_params[1] + start_hue, h_step):
-                    # Green correct
-                    if 80 < t_hue < 130: continue
-                    if hsv_val > 0.90: m_hsv_val = hsv_val * 0.85 if 85 < t_hue < 140 else hsv_val
+                    # Green correct 120
+                    m_hsv_val = hsv_val
+                    if 80 < t_hue < 110: continue
+                    if 130 < t_hue < 160: continue
+                    if hsv_val > 0.80: m_hsv_val = hsv_val * 1.00 if 85 < t_hue < 140 else hsv_val
                     else: m_hsv_val = hsv_val
                     hsv_hue = float(t_hue) / 360.0
                     self.add_rgb(tuple([hsv_hue, hsv_sat, m_hsv_val]), color_space='hsv')

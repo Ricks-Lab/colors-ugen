@@ -84,7 +84,6 @@ def main():
         a_deg = 90.0*float(i)/float(c_len)
         y1 = abs(math.sin(a_deg * math.pi / 180.0))
         x1 = abs(math.cos(a_deg * math.pi / 180.0))
-        #print('angle: {}, i: {}, x: {}, y: {}, color: {}'.format(a_deg, i, x1, y1, f_col))
         ref_y = [0.0, y1]
         ref_x = [0.0, x1]
         ax.plot(ref_x, ref_y, label=f_col, color=f_col, linewidth=2)
