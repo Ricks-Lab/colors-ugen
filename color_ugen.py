@@ -42,13 +42,17 @@ class ColorUgen:
         self.colors = {key: self.colors[key] for key in sorted(self.colors.keys())}
 
     def sort_by_value(self):
+        # TODO - Need to support by specific tuple index in dict values.
+        # tup_val = 0 if self.maps[1] == 'yiq' else 2
         self.colors = {k: self.colors[k] for k in sorted(self.colors, key=self.colors.get, reverse=True)}
 
     def drop_brigth(self, y=0.99):
-        self.colors = {k: v for k, v in self.colors.items() if v[0] < y}
+        tup_val = 0 if self.maps[1] == 'yiq' else 2
+        self.colors = {k: v for k, v in self.colors.items() if v[tup_val] < y}
 
     def drop_dark(self, y=0.01):
-        self.colors = {k: v for k, v in self.colors.items() if v[0] > y}
+        tup_val = 0 if self.maps[1] == 'yiq' else 2
+        self.colors = {k: v for k, v in self.colors.items() if v[tup_val] > y}
 
     def add_rgb(self, add_val, color_space='hsv', quiet=True):
         if color_space == 'yiq':
@@ -75,13 +79,10 @@ class ColorUgen:
 
     def color_gen_list(self, num_cols, color_space='hsv', debug=False):
         if color_space == 'yiq':
-            #return self.color_gen_list_from_yiq(num_cols, debug)[:num_cols]
             return self.color_gen_list_from_yiq(num_cols, debug)
         elif color_space == 'rgb':
-            # return self.color_gen_list_from_yiq(num_cols, debug)[:num_cols]
             return self.color_gen_list_from_rgb(num_cols, debug)
         else:
-            #return self.color_gen_list_from_hsv(num_cols, debug)[:num_cols]
             return self.color_gen_list_from_hsv(num_cols, debug)
 
     def color_gen_list_from_rgb(self, num_cols, debug=False):
