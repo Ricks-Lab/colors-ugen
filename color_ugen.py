@@ -30,6 +30,9 @@ __docformat__ = 'reStructuredText'
 
 import colorsys
 import math
+from typing import List, Tuple, Union
+
+ColSpaceVal = Union[Tuple[float, ...], Tuple[float, float, float]]
 
 
 class ColorUgen:
@@ -37,56 +40,52 @@ class ColorUgen:
     Class for the generation of sets of distinct colors.
     """
     def __init__(self):
-        self.colors = {}    # Key is #rgb, value is source color space, ot yiq if source is rgb
+        # Key is #rgb, value is source color space, ot yiq if source is rgb
+        self.colors = {}
         self.counter = 0
         self.maps = ['rgb', 'hsv']
 
-    def sort_by_key(self):
+    def sort_by_key(self) -> None:
         """
         Sort by hex rgb string.  Not sure how useful this is.
-        :return:
         """
         self.colors = {key: self.colors[key] for key in sorted(self.colors.keys())}
 
-    def sort_by_value(self):
+    def sort_by_value(self) -> None:
         """
         Sort by value, use correct value tuple index based on color space.
-        :return:
         """
         tup_val = 0 if self.maps[1] == 'yiq' else 2
         self.colors = {k: v for k, v in sorted(self.colors.items(), key=lambda x: x[1][tup_val], reverse=True)}
 
-    def drop_bright(self, y=0.99):
+    def drop_bright(self, y: float = 1.0) -> None:
         """
         Drop color items from list based on high brightness (v for hsv and y for yiq)
+
         :param y: brightness 0-1
-        :type y: float
-        :return:
         """
+        if y >= 1.0: return
         tup_val = 0 if self.maps[1] == 'yiq' else 2
         self.colors = {k: v for k, v in self.colors.items() if v[tup_val] < y}
 
-    def drop_dark(self, y=0.01):
+    def drop_dark(self, y: float = 0.0) -> None:
         """
         Drop color items from list based on low brightness (v for hsv and y for yiq)
+
         :param y: brightness 0-1
-        :type y: float
-        :return:
         """
+        if y <= 0.0: return
         tup_val = 0 if self.maps[1] == 'yiq' else 2
         self.colors = {k: v for k, v in self.colors.items() if v[tup_val] > y}
 
-    def add_rgb(self, add_val, color_space='hsv', quiet=True):
+    def add_rgb(self, add_val: ColSpaceVal, color_space: str = 'hsv', quiet: bool = True) -> None:
         """
-        Add new color to color dictionary.
-        Key will be hex rgb string, value will be original color map value or yiq if orig is rgb.
+        Add new color to color dictionary. Key will be hex rgb string, value will be original color
+        map value or yiq if orig is rgb.
+
         :param add_val: Three element tuple of color in given color space.
-        :type add_val: tuple
         :param color_space: Name of color space used to generate colors.
-        :type color_space: str
         :param quiet: More output if True
-        :type quiet: bool
-        :return: None
         """
         if color_space == 'yiq':
             rgb_tup = colorsys.yiq_to_rgb(*add_val)
@@ -110,17 +109,14 @@ class ColorUgen:
         self.counter += 1
         return
 
-    def color_gen_list(self, num_cols, color_space='hsv', debug=False):
+    def color_gen_list(self, num_cols: int, color_space: str = 'hsv', debug: bool = False):
         """
         Generate a minimum number of colors by stepping through the given color space.
+
         :param num_cols: Minimum number of colors to generate.
-        :type num_cols: int
         :param color_space: Source color space
-        :type color_space: str
         :param debug: More debug info displayed if True
-        :type debug: bool
         :return: List of colors as hex rgb strings
-        :rtype: list
         """
         if color_space == 'yiq':
             return self.color_gen_list_from_yiq(num_cols, debug)
@@ -129,15 +125,13 @@ class ColorUgen:
         else:
             return self.color_gen_list_from_hsv(num_cols, debug)
 
-    def color_gen_list_from_rgb(self, num_cols, debug=False):
+    def color_gen_list_from_rgb(self, num_cols: int, debug: bool = False) -> List[str]:
         """
-        Generate a list of color from the rgb color cube and return a list greater in length than cum_cols.
+        Generate a list of color from the rgb color cube and return a list greater in length than num_cols.
+
         :param num_cols: Minimum number of colors to generate.
-        :type num_cols: int
         :param debug: More debug info displayed if True
-        :type debug: bool
         :return: List of colors as hex rgb strings
-        :rtype: list
         """
         # Calculate optimal number of steps for num_cols distinct colors
         size_side = int((num_cols ** (1.0/3.0)) // 1)
@@ -170,15 +164,13 @@ class ColorUgen:
         #self.sort_by_key()
         return list(self.colors.keys())
 
-    def color_gen_list_from_yiq(self, num_cols, debug=False):
+    def color_gen_list_from_yiq(self, num_cols: int, debug: bool = False) -> List[str]:
         """
         Generate a list of color from the yiq color space and return a list greater in length than cum_cols.
+
         :param num_cols: Minimum number of colors to generate.
-        :type num_cols: int
         :param debug: More debug info displayed if True
-        :type debug: bool
         :return: List of colors as hex rgb strings
-        :rtype: list
         ..note:: Stepping through the space is probably not correct.
         """
         # TODO = need to step through z, x, y of the cube in the y, i, q space and translate to y, i, q coords.
@@ -219,15 +211,13 @@ class ColorUgen:
 
         return list(self.colors.keys())
 
-    def color_gen_list_from_hsv(self, num_cols, debug=False):
+    def color_gen_list_from_hsv(self, num_cols: int, debug: bool = False) -> List[str]:
         """
         Generate a list of color from the hsv color cylinder and return a list greater in length than cum_cols.
+
         :param num_cols: Minimum number of colors to generate.
-        :type num_cols: int
         :param debug: More debug info displayed if True
-        :type debug: bool
         :return: List of colors as hex rgb strings
-        :rtype: list
         """
 
         # Calculate optimal number of steps for num_cols distinct colors
@@ -275,11 +265,11 @@ class ColorUgen:
                 if debug: print('start_hue: {}'.format(start_hue))
         return list(self.colors.keys())
 
-    def print(self):
+    def print(self) -> None:
         """
         Print the color dictionary.
-        :return:
         """
         print('Added hsv: {}, Resultant rgb: {}'.format(self.counter, len(self.colors)))
         for rgb, ocm in self.colors.items():
             print('rgb: {}, {}: ({:.2f}, {:.2f}, {:.2f})'.format(rgb, self.maps[1], *ocm))
+

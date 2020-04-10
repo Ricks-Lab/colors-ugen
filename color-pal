@@ -38,7 +38,6 @@ import color_ugen
 def main():
     """
     Main flow for color-pal.
-    :return:
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('--about', help='README',
@@ -71,11 +70,11 @@ def main():
     fig_size = 10
     fig = plt.figure(figsize=(fig_size, fig_size))
     ax = fig.add_subplot(1, 1, 1)
-    #ax.set_facecolor('#d0dbd5')
+    ax.set_facecolor('#d0dbd5')
     #ax.set_facecolor('#cccccc')
     #ax.set_facecolor('#bfbbbb')
     #ax.set_facecolor('#afaaaa')
-    ax.set_facecolor('#bbbfbb')
+    #ax.set_facecolor('#bbbfbb')
     fig.patch.set_facecolor('#eeeeee')
     plt.subplots_adjust(left=0.01, right=0.99, top=0.99, bottom=0.01)
 
