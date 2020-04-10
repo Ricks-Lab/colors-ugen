@@ -30,9 +30,11 @@ __docformat__ = 'reStructuredText'
 
 import colorsys
 import math
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Dict
 
-ColSpaceVal = Union[Tuple[float, ...], Tuple[float, float, float]]
+ColSpaceVal = Union[List[float], Tuple[float, ...]]
+ColSpaceList = List[float]
+ColorDict = Dict[str, ColSpaceList]
 
 
 class ColorUgen:
@@ -41,7 +43,7 @@ class ColorUgen:
     """
     def __init__(self):
         # Key is #rgb, value is source color space, ot yiq if source is rgb
-        self.colors = {}
+        self.colors: ColorDict = {}
         self.counter = 0
         self.maps = ['rgb', 'hsv']
 
@@ -122,8 +124,7 @@ class ColorUgen:
             return self.color_gen_list_from_yiq(num_cols, debug)
         elif color_space == 'rgb':
             return self.color_gen_list_from_rgb(num_cols, debug)
-        else:
-            return self.color_gen_list_from_hsv(num_cols, debug)
+        return self.color_gen_list_from_hsv(num_cols, debug)
 
     def color_gen_list_from_rgb(self, num_cols: int, debug: bool = False) -> List[str]:
         """
@@ -166,7 +167,7 @@ class ColorUgen:
 
     def color_gen_list_from_yiq(self, num_cols: int, debug: bool = False) -> List[str]:
         """
-        Generate a list of color from the yiq color space and return a list greater in length than cum_cols.
+        Generate a list of color from the yiq color space and return a list greater in length than num_cols.
 
         :param num_cols: Minimum number of colors to generate.
         :param debug: More debug info displayed if True
@@ -213,7 +214,7 @@ class ColorUgen:
 
     def color_gen_list_from_hsv(self, num_cols: int, debug: bool = False) -> List[str]:
         """
-        Generate a list of color from the hsv color cylinder and return a list greater in length than cum_cols.
+        Generate a list of color from the hsv color cylinder and return a list greater in length than num_cols.
 
         :param num_cols: Minimum number of colors to generate.
         :param debug: More debug info displayed if True
@@ -272,4 +273,3 @@ class ColorUgen:
         print('Added hsv: {}, Resultant rgb: {}'.format(self.counter, len(self.colors)))
         for rgb, ocm in self.colors.items():
             print('rgb: {}, {}: ({:.2f}, {:.2f}, {:.2f})'.format(rgb, self.maps[1], *ocm))
-
