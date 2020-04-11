@@ -162,7 +162,6 @@ class ColorUgen:
         self.drop_bright(0.6)
         self.drop_dark(0.2)
         self.sort_by_value()
-        #self.sort_by_key()
         return list(self.colors.keys())
 
     def color_gen_list_from_yiq(self, num_cols: int, debug: bool = False) -> List[str]:
@@ -223,12 +222,16 @@ class ColorUgen:
 
         # Calculate optimal number of steps for num_cols distinct colors
         num_hues = 18
-        num_sats = int((math.sqrt(num_cols/num_hues)) // 1) + 1
-        num_vals = int((num_cols / (num_hues + num_sats)) // 1)
+        num_vals = num_sats = int((math.sqrt(num_cols/num_hues)) // 1) + 1
+        if num_cols > 90:
+            if num_hues * num_sats * num_vals > 1.2 * num_cols: num_hues -= 1
+        else:
+            num_hues -= 1
+            num_sats += 1
         if debug: print('loops: h={}, s={}, v={}'.format(num_hues, num_sats, num_vals))
 
         # Calculate range parameters, start, stop, index.  Subtract from hue stop, to allow drifting start
-        max_hue = 360 - int(360/num_hues)
+        max_hue = 3600 - int(3600/num_hues)
         h_params = (0, max_hue, num_hues)  # min, max, num_steps
         s_params = (40, 90, num_sats)
         v_params = (40, 80, num_vals)
@@ -246,21 +249,22 @@ class ColorUgen:
 
         # Step from brightest to darkest
         for t_val in range(v_params[1], v_params[0], -v_step):
-            hsv_val = t_val / 100
+            hsv_val = t_val / 100.0
 
             # Step from highest saturation to lowest
             for t_sat in range(s_params[1], s_params[0], -s_step):
-                hsv_sat = t_sat / 100
+                hsv_sat = t_sat / 100.0
 
                 # Step from red to one step before red again
                 for t_hue in range(h_params[0] + start_hue, h_params[1] + start_hue, h_step):
                     # Green correct 120
-                    m_hsv_val = hsv_val
-                    if 80 < t_hue < 110: continue
-                    if 130 < t_hue < 160: continue
-                    if hsv_val > 0.80: m_hsv_val = hsv_val * 1.00 if 85 < t_hue < 140 else hsv_val
-                    else: m_hsv_val = hsv_val
-                    hsv_hue = float(t_hue) / 360.0
+                    if 80 < t_hue/10.0 < 110 or 130 < t_hue/10.0 < 160: continue
+                    if hsv_val > 0.80:
+                        m_hsv_val = hsv_val * 1.00 if 85 < t_hue/10.0 < 140 else hsv_val
+                    else:
+                        m_hsv_val = hsv_val
+                    # Enf Green correct
+                    hsv_hue = float(t_hue) / 3600.0
                     self.add_rgb(tuple([hsv_hue, hsv_sat, m_hsv_val]), color_space='hsv')
                 start_hue += int(h_step / total_sv_steps)
                 if debug: print('start_hue: {}'.format(start_hue))
