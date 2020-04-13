@@ -80,13 +80,28 @@ class ColorUgen:
         tup_val = 0 if self.maps[1] == 'yiq' else 2
         self.colors = {k: v for k, v in self.colors.items() if v[tup_val] > y}
 
-    def add_rgb(self, add_val: ColSpaceVal, color_space: str = 'hsv', quiet: bool = True) -> None:
+    @staticmethod
+    def rgb_const_y(rgb_val: ColSpaceVal,  y_val: float, quiet: bool = True) -> ColSpaceVal:
+        """
+        Convert rgb to rgb of given luminosity.
+
+        :param rgb_val:  RGB value to be converted
+        :param y_val:  Luminosity
+        :param quiet:
+        :return: Normalized RGB
+        """
+        yiq_list = list(colorsys.rgb_to_yiq(*rgb_val))
+        yiq_list[0] = y_val
+        return colorsys.yiq_to_rgb(*yiq_list)
+
+    def add_rgb(self, add_val: ColSpaceVal, color_space: str = 'hsv', y_val: float = None, quiet: bool = True) -> None:
         """
         Add new color to color dictionary. Key will be hex rgb string, value will be original color
         map value or yiq if orig is rgb.
 
         :param add_val: Three element tuple of color in given color space.
         :param color_space: Name of color space used to generate colors.
+        :param y_val: Value of luminosity to normalize to, or None to skip
         :param quiet: More output if True
         """
         if color_space == 'yiq':
@@ -98,6 +113,9 @@ class ColorUgen:
             self.maps[1] = 'yiq'
         else:
             rgb_tup = colorsys.hsv_to_rgb(*add_val)
+            if y_val:
+                print('y_val in normalization: {}'.format(y_val))
+                rgb_tup = self.rgb_const_y(rgb_tup, y_val)
             self.maps[1] = 'hsv'
 
         if rgb_tup[0] < 0 or rgb_tup[1] < 0 or rgb_tup[2] < 0:
@@ -111,12 +129,13 @@ class ColorUgen:
         self.counter += 1
         return
 
-    def color_gen_list(self, num_cols: int, color_space: str = 'hsv', debug: bool = False):
+    def color_gen_list(self, num_cols: int, color_space: str = 'hsv', normalization: bool = False, debug: bool = False):
         """
         Generate a minimum number of colors by stepping through the given color space.
 
         :param num_cols: Minimum number of colors to generate.
         :param color_space: Source color space
+        :param normalization: Convert RGB to YIQ and normalize y, then convert back.
         :param debug: More debug info displayed if True
         :return: List of colors as hex rgb strings
         """
@@ -124,7 +143,7 @@ class ColorUgen:
             return self.color_gen_list_from_yiq(num_cols, debug)
         elif color_space == 'rgb':
             return self.color_gen_list_from_rgb(num_cols, debug)
-        return self.color_gen_list_from_hsv(num_cols, debug)
+        return self.color_gen_list_from_hsv(num_cols, normalization, debug)
 
     def color_gen_list_from_rgb(self, num_cols: int, debug: bool = False) -> List[str]:
         """
@@ -211,16 +230,18 @@ class ColorUgen:
 
         return list(self.colors.keys())
 
-    def color_gen_list_from_hsv(self, num_cols: int, debug: bool = False) -> List[str]:
+    def color_gen_list_from_hsv(self, num_cols: int, lum_normal: bool = False, debug: bool = False) -> List[str]:
         """
         Generate a list of color from the hsv color cylinder and return a list greater in length than num_cols.
 
         :param num_cols: Minimum number of colors to generate.
+        :param lum_normal: Normalize luminosity if True
         :param debug: More debug info displayed if True
         :return: List of colors as hex rgb strings
         """
 
         # Calculate optimal number of steps for num_cols distinct colors
+        lum_val = None
         num_hues = 18
         num_vals = num_sats = int((math.sqrt(num_cols/num_hues)) // 1) + 1
         if num_cols > 90:
@@ -233,8 +254,12 @@ class ColorUgen:
         # Calculate range parameters, start, stop, index.  Subtract from hue stop, to allow drifting start
         max_hue = 3600 - int(3600/num_hues)
         h_params = (0, max_hue, num_hues)  # min, max, num_steps
-        s_params = (4000, 9000, num_sats)
-        v_params = (4000, 8000, num_vals)
+        if lum_normal:
+            s_params = (7000, 10000, num_sats)
+            v_params = (2000, 5200, num_vals)
+        else:
+            s_params = (4000, 9000, num_sats)
+            v_params = (4000, 8000, num_vals)
         if debug: print('params: h={}, s={}, v={}'.format(h_params, s_params, v_params))
 
         # Set parameters for drifting hue
@@ -250,6 +275,7 @@ class ColorUgen:
         # Step from brightest to darkest
         for t_val in range(v_params[1], v_params[0], -v_step):
             hsv_val = float(t_val) / 10000.0
+            if lum_normal: lum_val = hsv_val
 
             # Step from highest saturation to lowest
             for t_sat in range(s_params[1], s_params[0], -s_step):
@@ -257,15 +283,16 @@ class ColorUgen:
 
                 # Step from red to one step before red again
                 for t_hue in range(h_params[0] + start_hue, h_params[1] + start_hue, h_step):
-                    # Green correct 120
+                    m_hsv_val = hsv_val
+                    # Skip some green
                     if 800 < t_hue < 1100 or 1300 < t_hue < 1600: continue
-                    if hsv_val > 0.70:
-                        m_hsv_val = hsv_val * 0.95 if 500 < t_hue < 1800 else hsv_val
-                    else:
-                        m_hsv_val = hsv_val
-                    # End Green correct
+                    if not lum_normal:
+                        # Green correct 120
+                        if hsv_val > 0.70:
+                            m_hsv_val = hsv_val * 0.95 if 500 < t_hue < 1800 else hsv_val
+                        # End Green correct
                     hsv_hue = float(t_hue) / 3600.0
-                    self.add_rgb(tuple([hsv_hue, hsv_sat, m_hsv_val]), color_space='hsv')
+                    self.add_rgb(tuple([hsv_hue, hsv_sat, m_hsv_val]), color_space='hsv', y_val=lum_val)
                 start_hue += int(h_step / total_sv_steps)
                 if debug: print('start_hue: {}'.format(start_hue))
         return list(self.colors.keys())

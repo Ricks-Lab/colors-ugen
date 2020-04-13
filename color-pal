@@ -46,6 +46,8 @@ def main():
                         type=int, default=150)
     parser.add_argument('--color_space', help='color space for source: rgb, hsv or yiq',
                         type=str, default='hsv')
+    parser.add_argument('--normal', help='Normalize Luminosity',
+                        action='store_true', default=False)
     parser.add_argument('-d', '--debug', help='Debug output',
                         action='store_true', default=False)
     args = parser.parse_args()
@@ -63,7 +65,8 @@ def main():
         sys.exit(0)
 
     colors = color_ugen.ColorUgen()
-    color_list = colors.color_gen_list(args.num_colors, color_space=args.color_space, debug=args.debug)
+    color_list = colors.color_gen_list(args.num_colors, color_space=args.color_space,
+                                       normalization=args.normal, debug=args.debug)
 
     colors.print()
 
