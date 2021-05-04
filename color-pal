@@ -32,7 +32,7 @@ import argparse
 import sys
 import math
 import matplotlib.pyplot as plt
-import color_ugen
+from CUmodules import colors_ugen
 
 
 def main():
@@ -57,14 +57,14 @@ def main():
         print(__doc__)
         print('Author: ', __author__)
         print('Copyright: ', __copyright__)
-        print('Credits: ', __credits__)
+        print('Credits: ', *['\n      {}'.format(item) for item in __credits__])
         print('License: ', __license__)
         print('Version: ', __version__)
         print('Maintainer: ', __maintainer__)
         print('Status: ', __status__)
         sys.exit(0)
 
-    colors = color_ugen.ColorUgen()
+    colors = colors_ugen.ColorUgen()
     color_list = colors.color_gen_list(args.num_colors, color_space=args.color_space,
                                        normalization=args.normal, debug=args.debug)
 
@@ -74,10 +74,6 @@ def main():
     fig = plt.figure(figsize=(fig_size, fig_size))
     ax = fig.add_subplot(1, 1, 1)
     ax.set_facecolor('#d0dbd5')
-    #ax.set_facecolor('#cccccc')
-    #ax.set_facecolor('#bfbbbb')
-    #ax.set_facecolor('#afaaaa')
-    #ax.set_facecolor('#bbbfbb')
     fig.patch.set_facecolor('#eeeeee')
     plt.subplots_adjust(left=0.01, right=0.99, top=0.99, bottom=0.01)
 

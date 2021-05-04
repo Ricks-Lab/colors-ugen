@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-""" color-ugen  -  ColorUgen Class
+""" colors-ugen  -  ColorUgen Class
 
     Copyright (C) 2019  RueiKe
 
@@ -20,10 +20,8 @@ __author__ = 'RueiKe'
 __copyright__ = 'Copyright (C) 2020 RueiKe'
 __credits__ = []
 __license__ = 'GNU General Public License'
-__program_name__ = 'color-pal'
-__version__ = 'v0.0.1'
+__program_name__ = 'colors-ugen'
 __maintainer__ = 'RueiKe'
-__status__ = 'Development'
 __docformat__ = 'reStructuredText'
 # pylint: disable=multiple-statements
 # pylint: disable=line-too-long
@@ -31,6 +29,7 @@ __docformat__ = 'reStructuredText'
 import colorsys
 import math
 from typing import List, Tuple, Union, Dict
+from CUmodules import __version__, __status__
 
 ColSpaceVal = Union[List[float], Tuple[float, ...]]
 ColSpaceList = List[float]
@@ -91,7 +90,9 @@ class ColorUgen:
         :return: Normalized RGB
         """
         yiq_list = list(colorsys.rgb_to_yiq(*rgb_val))
+        print('orig yiq: ({:2f}, {:2f}, {:2f})'.format(*yiq_list))
         yiq_list[0] = y_val
+        print('new yiq: ({:2f}, {:2f}, {:2f})'.format(*yiq_list))
         return colorsys.yiq_to_rgb(*yiq_list)
 
     def add_rgb(self, add_val: ColSpaceVal, color_space: str = 'hsv', y_val: float = None, quiet: bool = True) -> None:
@@ -255,8 +256,8 @@ class ColorUgen:
         max_hue = 3600 - int(3600/num_hues)
         h_params = (0, max_hue, num_hues)  # min, max, num_steps
         if lum_normal:
-            s_params = (7000, 10000, num_sats)
-            v_params = (2000, 5200, num_vals)
+            s_params = (8000, 10000, num_sats)
+            v_params = (4000, 6000, num_vals)
         else:
             s_params = (4000, 9000, num_sats)
             v_params = (4000, 8000, num_vals)
