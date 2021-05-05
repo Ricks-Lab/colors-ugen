@@ -31,16 +31,16 @@ import sys
 import os
 import pathlib
 from setuptools import setup, find_packages
-from CUmodules import __version__, __status__
+from colorsugen import __version__, __status__
 
 if sys.version_info < (3, 6):
-    print('colors_ugen requires at least Python 3.6.')
+    print('colorsugen requires at least Python 3.6.')
     sys.exit(1)
 
 with open(os.path.join(pathlib.Path(__file__).parent, 'README.md'), 'r') as file_ptr:
     LONG_DESCRIPTION = file_ptr.read()
 
-setup(name='colors_ugen',
+setup(name='colorsugen',
       version=__version__,
       description='Distinct color generator',
       long_description_content_type='text/markdown',
@@ -50,7 +50,7 @@ setup(name='colors_ugen',
       platforms='posix',
       author_email='rueikes.homelab@gmail.com',
       url='https://github.com/Ricks-Lab/colors-ugen',
-      packages=find_packages(include=['CUmodules']),
+      packages=find_packages(include=['colorsugen']),
       include_package_data=True,
       scripts=['color-pal'],
       license='GPL-3',
@@ -66,4 +66,4 @@ setup(name='colors_ugen',
                    'Topic :: Scientific/Engineering :: Information Analysis',
                    'License :: OSI Approved :: GNU General Public License v3 (GPLv3)'],
       install_requires=['matplotlib>=3.1.3'],
-      data_files=[('share/colors-ugen/doc', ['README.md', 'LICENSE'])])
+      data_files=[('share/colorsugen/doc', ['README.md', 'LICENSE'])])

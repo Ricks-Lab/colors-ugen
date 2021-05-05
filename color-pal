@@ -32,7 +32,7 @@ import argparse
 import sys
 import math
 import matplotlib.pyplot as plt
-from CUmodules import colors_ugen
+import colorsugen
 
 
 def main():
@@ -64,7 +64,7 @@ def main():
         print('Status: ', __status__)
         sys.exit(0)
 
-    colors = colors_ugen.ColorUgen()
+    colors = colorsugen.colorsugen.ColorUgen()
     color_list = colors.color_gen_list(args.num_colors, color_space=args.color_space,
                                        normalization=args.normal, debug=args.debug)
 
@@ -77,7 +77,7 @@ def main():
     fig.patch.set_facecolor('#eeeeee')
     plt.subplots_adjust(left=0.01, right=0.99, top=0.99, bottom=0.01)
 
-    c_len = len(color_list)
+    c_len = len(list(color_list))
     for i, f_col in enumerate(color_list):
         a_deg = 90.0*float(i)/float(c_len)
         y1 = abs(math.sin(a_deg * math.pi / 180.0))

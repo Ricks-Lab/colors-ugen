@@ -28,8 +28,7 @@ __docformat__ = 'reStructuredText'
 
 import colorsys
 import math
-from typing import List, Tuple, Union, Dict
-from CUmodules import __version__, __status__
+from typing import List, Tuple, Union, Dict, Generator
 
 ColSpaceVal = Union[List[float], Tuple[float, ...]]
 ColSpaceList = List[float]
@@ -45,6 +44,9 @@ class ColorUgen:
         self.colors: ColorDict = {}
         self.counter = 0
         self.maps = ['rgb', 'hsv']
+
+    def __len__(self) -> int:
+        return len(list(self.colors.keys()))
 
     def sort_by_key(self) -> None:
         """
@@ -130,7 +132,8 @@ class ColorUgen:
         self.counter += 1
         return
 
-    def color_gen_list(self, num_cols: int, color_space: str = 'hsv', normalization: bool = False, debug: bool = False):
+    def color_gen_list(self, num_cols: int, color_space: str = 'hsv', normalization: bool = False,
+                       debug: bool = False, reverse: bool = False) -> List[str]:
         """
         Generate a minimum number of colors by stepping through the given color space.
 
@@ -138,13 +141,17 @@ class ColorUgen:
         :param color_space: Source color space
         :param normalization: Convert RGB to YIQ and normalize y, then convert back.
         :param debug: More debug info displayed if True
+        :param reverse: reverse the color list order if True
         :return: List of colors as hex rgb strings
         """
         if color_space == 'yiq':
-            return self.color_gen_list_from_yiq(num_cols, debug)
+            color_list = self.color_gen_list_from_yiq(num_cols, debug)
         elif color_space == 'rgb':
-            return self.color_gen_list_from_rgb(num_cols, debug)
-        return self.color_gen_list_from_hsv(num_cols, normalization, debug)
+            color_list = self.color_gen_list_from_rgb(num_cols, debug)
+        else:
+            color_list = self.color_gen_list_from_hsv(num_cols, normalization, debug)
+        if not reverse: color_list.reverse()
+        return color_list
 
     def color_gen_list_from_rgb(self, num_cols: int, debug: bool = False) -> List[str]:
         """
@@ -231,13 +238,15 @@ class ColorUgen:
 
         return list(self.colors.keys())
 
-    def color_gen_list_from_hsv(self, num_cols: int, lum_normal: bool = False, debug: bool = False) -> List[str]:
+    def color_gen_list_from_hsv(self, num_cols: int, lum_normal: bool = False, debug: bool = False,
+                                reverse: bool = True) -> List[str]:
         """
         Generate a list of color from the hsv color cylinder and return a list greater in length than num_cols.
 
         :param num_cols: Minimum number of colors to generate.
         :param lum_normal: Normalize luminosity if True
         :param debug: More debug info displayed if True
+        :param reverse: reverse color order if True
         :return: List of colors as hex rgb strings
         """
 
