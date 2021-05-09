@@ -65,10 +65,10 @@ def main():
         sys.exit(0)
 
     colors = colorsugen.colorsugen.ColorUgen()
-    color_list = colors.color_gen_list(args.num_colors, color_space=args.color_space,
-                                       normalization=args.normal, debug=args.debug)
-
+    color_list = list(colors.unique_colors(args.num_colors, color_space=args.color_space,
+                                           normalization=args.normal, debug=args.debug))
     colors.print()
+    print('target colors: {}. generated colors: {}'.format(args.num_colors, len(color_list)))
 
     fig_size = 10
     fig = plt.figure(figsize=(fig_size, fig_size))
@@ -78,7 +78,8 @@ def main():
     plt.subplots_adjust(left=0.01, right=0.99, top=0.99, bottom=0.01)
 
     c_len = len(list(color_list))
-    for i, f_col in enumerate(color_list):
+    for i, f_col in enumerate(colors.unique_colors(args.num_colors, color_space=args.color_space,
+                                                   normalization=args.normal, debug=args.debug)):
         a_deg = 90.0*float(i)/float(c_len)
         y1 = abs(math.sin(a_deg * math.pi / 180.0))
         x1 = abs(math.cos(a_deg * math.pi / 180.0))

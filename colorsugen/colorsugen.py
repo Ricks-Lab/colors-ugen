@@ -40,7 +40,7 @@ class ColorUgen:
     Class for the generation of sets of distinct colors.
     """
     def __init__(self):
-        # Key is #rgb, value is source color space, ot yiq if source is rgb
+        # Key is #rgb, value is source color space, or yiq if source is rgb
         self.colors: ColorDict = {}
         self.counter = 0
         self.maps = ['rgb', 'hsv']
@@ -132,8 +132,8 @@ class ColorUgen:
         self.counter += 1
         return
 
-    def color_gen_list(self, num_cols: int, color_space: str = 'hsv', normalization: bool = False,
-                       debug: bool = False, reverse: bool = False) -> List[str]:
+    def unique_colors(self, num_cols: int, color_space: str = 'hsv', normalization: bool = False,
+                      debug: bool = False, reverse: bool = False) -> Generator[str, None, None]:
         """
         Generate a minimum number of colors by stepping through the given color space.
 
@@ -144,6 +144,7 @@ class ColorUgen:
         :param reverse: reverse the color list order if True
         :return: List of colors as hex rgb strings
         """
+        num_cols = int(num_cols * 1.1)
         if color_space == 'yiq':
             color_list = self.color_gen_list_from_yiq(num_cols, debug)
         elif color_space == 'rgb':
@@ -151,7 +152,8 @@ class ColorUgen:
         else:
             color_list = self.color_gen_list_from_hsv(num_cols, normalization, debug)
         if not reverse: color_list.reverse()
-        return color_list
+        for color in color_list:
+            yield color
 
     def color_gen_list_from_rgb(self, num_cols: int, debug: bool = False) -> List[str]:
         """
