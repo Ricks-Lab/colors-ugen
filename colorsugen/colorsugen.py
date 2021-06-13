@@ -144,7 +144,7 @@ class ColorUgen:
         :param reverse: reverse the color list order if True
         :return: List of colors as hex rgb strings
         """
-        num_cols = int(num_cols * 1.1)
+        num_cols = int(num_cols * 1.3)
         if color_space == 'yiq':
             color_list = self.color_gen_list_from_yiq(num_cols, debug)
         elif color_space == 'rgb':
