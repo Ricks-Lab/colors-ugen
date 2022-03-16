@@ -65,5 +65,5 @@ setup(name='colorsugen',
                    'Intended Audience :: Information Technology',
                    'Topic :: Scientific/Engineering :: Information Analysis',
                    'License :: OSI Approved :: GNU General Public License v3 (GPLv3)'],
-      install_requires=['matplotlib>=3.1.3'],
+      install_requires=['matplotlib>=3.1.2'],
       data_files=[('share/colorsugen/doc', ['README.md', 'LICENSE'])])
